@@ -1,0 +1,19 @@
+{
+  "name": "shinian-idea-inbox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/dev.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:e2e": "playwright test",
+    "check": "node --check public/app.js && node --check server/analyze.js && node --check server/dev.mjs && node --check api/analyze.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "prettier": "^3.10.1"
+  }
+}

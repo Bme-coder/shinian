@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f6f5ef" />
+    <link rel="stylesheet" href="./guide.css" />
+    <link rel="icon" href="./icons/icon.svg" />
+    <title>连接指南 · 拾念</title>
+  </head>
+  <body>
+    <main class="guide">
+      <a class="top-back" href="./">← 回到拾念</a>
+      <div class="eyebrow">A HOME FOR YOUR IDEAS</div>
+      <h1>几步之后，安心收集。</h1>
+      <p>
+        拾念是可以添加到 iPhone 主屏幕的网页 App。GitHub
+        保存源码，部署后的网站就是你的 App，不需要购买苹果开发者会员。
+      </p>
+      <article class="card">
+        <h2>01 · 添加到手机主屏幕</h2>
+        <ol>
+          <li>
+            用 iPhone 的 <strong>Safari</strong> 打开你部署的 HTTPS 网站。
+          </li>
+          <li>
+            点「分享」→「添加到主屏幕」。如果看到「作为网页 App
+            打开」，将它打开。
+          </li>
+          <li>名称保留「拾念」，点「添加」。以后直接点桌面图标使用。</li>
+        </ol>
+        <p class="notice">
+          电脑上的 localhost 地址无法直接用于手机。先把应用部署到 HTTPS
+          网站，再从手机打开。首次打开需联网。
+        </p>
+      </article>
+      <article class="card">
+        <h2>02 · 连接你的 AI 服务</h2>
+        <p>在部署平台的环境变量中配置以下信息，然后重新部署：</p>
+        <pre>
+AI_API_KEY = 你的模型服务密钥
+AI_BASE_URL = https://api.openai.com/v1
+AI_MODEL = 你账户可用的视觉模型名称
+AI_PROTOCOL = chat
+APP_ACCESS_TOKEN = 自设的至少16位随机口令</pre>
+        <p>
+          兼容服务可修改 API 地址和模型。模型必须支持图片。使用 Responses
+          接口时，将 AI_PROTOCOL 设为 responses。供应商不支持 JSON 模式时，可设
+          AI_JSON_MODE=false。
+        </p>
+        <p>
+          随后打开拾念「设置」，填写同一个<strong>应用访问口令</strong>。前端和后端在同一网站时无需填服务器地址；如果前端在
+          GitHub Pages，填后端 HTTPS
+          域名，并把前端完整来源（协议+域名）添加到服务器 ALLOWED_ORIGINS。
+        </p>
+        <p class="notice">
+          不要把 AI API 密钥放进网页设置、源码或 GitHub。APP_ACCESS_TOKEN
+          只是你自设的应用口令。
+        </p>
+      </article>
+      <article class="card" id="shortcut">
+        <h2>03 · 连接苹果备忘录</h2>
+        <p>
+          先在苹果备忘录中创建一个文件夹，命名为 <strong>灵感收集</strong>。
+        </p>
+        <p>
+          在 iPhone「快捷指令」中创建一个快捷指令，命名为
+          <strong>拾念 · 存到备忘录</strong>，添加以下两个操作：
+        </p>
+        <ol>
+          <li><strong>获取剪贴板</strong>。</li>
+          <li>
+            <strong>创建备忘录</strong
+            >：内容选择上一步的「剪贴板」变量；文件夹选择你的「灵感收集」。打开「显示编写表单」，方便在保存前确认文件夹和正文。
+          </li>
+        </ol>
+        <p>
+          保存快捷指令。在拾念整理结果页点「存入苹果备忘录」，复制成功后，再点「打开快捷指令归档」。首次可能要求允许粘贴或访问备忘录，请检查提示并允许。
+        </p>
+        <p class="notice">
+          文件夹由快捷指令负责选择。分类写在每条笔记正文里，#标签可搜索，但不保证被系统识别为原生标签；☐
+          是文字待办符号。如果想按分类存不同文件夹，可在快捷指令里添加「从菜单中选取」，各分支使用不同文件夹。
+        </p>
+        <p>自动导入文件（如你的版本支持）：</p>
+        <a class="button secondary" href="./shortcuts/save-to-notes.shortcut"
+          >下载备忘录快捷指令</a
+        >
+        <p class="small-print">
+          导入文件的动作可能随系统版本调整；第一次使用前请打开编辑器检查内容，并选择目标文件夹。无法导入时按上面的两步手动创建。
+        </p>
+      </article>
+      <article class="card">
+        <h2>04 · 第一次整理</h2>
+        <ol>
+          <li>选择 1–6 张截图，按阅读顺序添加，可补充自己的背景和想法。</li>
+          <li>选整理重点，点「开始整理」。长截图会自动分片；过大时请分批。</li>
+          <li>检查并编辑标题、摘要、行动、启发和分类。</li>
+          <li>保存到灵感库，或通过快捷指令转存苹果备忘录。</li>
+        </ol>
+        <p>
+          第一版向备忘录传递整理后的文字。截图在本地草稿或保存后的灵感库中；如果也要放进备忘录，可在备忘录中手动添加原图。
+        </p>
+      </article>
+      <article class="card">
+        <h2>让灵感一直在</h2>
+        <p>
+          灵感库存在当前设备的浏览器储存空间。清除网站数据、更换手机、切换
+          Safari 与主屏幕
+          App，可能无法看到原有记录。请定期导出备份，并把重要内容存入苹果备忘录。
+        </p>
+        <p>
+          草稿离线可看可改，AI
+          整理需要联网。取消或请求失败不会清空已选择的截图。API
+          实际费用、内容留存及网络可达性取决于你配置的服务商。
+        </p>
+        <p>
+          快捷指令取消后，App
+          不会自动知道。请在备忘录确认是否创建成功，避免重复保存。
+        </p>
+      </article>
+    </main>
+  </body>
+</html>

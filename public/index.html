@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f6f5ef" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="拾念" />
+    <meta name="description" content="留住截图里的灵感，把想法整理成下一步。" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>拾念 · 让灵感有处可去</title>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <svg class="icon-defs" aria-hidden="true">
+      <defs>
+        <symbol id="i-plus" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </symbol>
+        <symbol id="i-image" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="4" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="m21 16-5-5-9 10M3 16l4-4 4 4" />
+        </symbol>
+        <symbol id="i-spark" viewBox="0 0 24 24">
+          <path
+            d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3ZM20 2v4M18 4h4"
+          />
+        </symbol>
+        <symbol id="i-book" viewBox="0 0 24 24">
+          <path
+            d="M5 3h13a2 2 0 0 1 2 2v16H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3ZM3 17h17M8 7h7M8 11h5"
+          />
+        </symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24">
+          <path
+            d="m9 3-1 3-3 1-2 4 2 3v3l4 3 3-1 3 1 4-3v-3l2-3-2-4-3-1-1-3Z"
+          />
+          <circle cx="12" cy="12" r="3" />
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+          <path d="M4 12h16m-6-6 6 6-6 6" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6" />
+        </symbol>
+        <symbol id="i-folder" viewBox="0 0 24 24">
+          <path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11H3Z" />
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M18 6 6 18" />
+        </symbol>
+        <symbol id="i-share" viewBox="0 0 24 24">
+          <path d="M12 15V2m-4 4 4-4 4 4M7 9H4v12h16V9h-3" />
+        </symbol>
+      </defs>
+    </svg>
+    <div id="offline-banner" class="offline" hidden>
+      当前离线 · 仍可查看和编辑灵感，AI 整理需要联网
+    </div>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="拾念首页"
+        ><span class="brand-mark">拾</span
+        ><span>拾念<small>IDEA INBOX</small></span></a
+      ><span class="top-note"
+        >让灵感，有处可去<span class="tiny-dot"></span></span
+      ><a class="help-link" href="./guide.html">使用指南 <span>↗</span></a>
+    </header>
+    <main>
+      <section id="capture-view" class="view">
+        <div class="hero">
+          <div class="eyebrow">
+            <span class="line"></span> CAPTURE THE SPARK
+          </div>
+          <h1>
+            让一张截图，<br class="mobile-break" />长出<span class="ink"
+              >新想法</span
+            >。
+          </h1>
+          <p>
+            评论里的一句话，文章里的一个瞬间。<br
+              class="mobile-break"
+            />先收下来，再让它成为你的下一步。
+          </p>
+        </div>
+        <div class="capture-layout">
+          <div class="capture-card card">
+            <div class="section-heading">
+              <div>
+                <span class="step-number">01</span>
+                <h2>收下这一刻</h2>
+              </div>
+              <span class="subtle" id="image-count">最多 6 张截图</span>
+            </div>
+            <label class="drop-zone" id="drop-zone" for="image-input"
+              ><span class="upload-art"
+                ><svg class="icon"><use href="#i-image" /></svg
+                ><span class="plus-badge">+</span></span
+              ><strong>放进一张让你有想法的截图</strong
+              ><span>轻点选择相册，或拖入图片</span
+              ><small>JPG / PNG / WebP · 支持多图和长截图</small></label
+            >
+            <input
+              type="file"
+              id="image-input"
+              accept="image/png,image/jpeg,image/webp"
+              multiple
+              class="visually-hidden"
+            />
+            <div id="images-grid" class="images-grid"></div>
+            <div class="context-field">
+              <label for="context">补充一点你的想法 <span>可选</span></label
+              ><textarea
+                id="context"
+                maxlength="6000"
+                rows="3"
+                placeholder="为什么想留下它？它让你想到了什么？"
+              ></textarea>
+              <div class="field-foot">
+                <span>加一点你的背景，整理会更贴近你。</span
+                ><span id="context-count">0 / 6000</span>
+              </div>
+            </div>
+            <div class="focus-field">
+              <label>这次，你想收获什么？</label>
+              <div class="focus-options" role="group" aria-label="整理重点">
+                <button
+                  type="button"
+                  class="focus-chip selected"
+                  data-focus="balanced"
+                  aria-pressed="true"
+                >
+                  ✧ 全面整理</button
+                ><button
+                  type="button"
+                  class="focus-chip"
+                  data-focus="summary"
+                  aria-pressed="false"
+                >
+                  提炼摘要</button
+                ><button
+                  type="button"
+                  class="focus-chip"
+                  data-focus="actions"
+                  aria-pressed="false"
+                >
+                  行动清单</button
+                ><button
+                  type="button"
+                  class="focus-chip"
+                  data-focus="inspiration"
+                  aria-pressed="false"
+                >
+                  给我启发
+                </button>
+              </div>
+            </div>
+            <div
+              id="capture-error"
+              class="error-message"
+              role="alert"
+              hidden
+            ></div>
+            <button id="analyze-button" class="button primary wide">
+              <svg class="icon"><use href="#i-spark" /></svg
+              ><span>开始整理</span
+              ><svg class="icon end"><use href="#i-arrow" /></svg></button
+            ><button
+              id="cancel-button"
+              class="button subtle-button wide"
+              hidden
+            >
+              取消整理
+            </button>
+            <p class="privacy-note">
+              点击后，截图与说明才会发送给你配置的 AI 服务。
+            </p>
+          </div>
+          <aside class="aside-stack">
+            <div class="promise-card">
+              <span class="small-label">FROM A SPARK TO A PLAN</span>
+              <h2>收藏，不止于收藏。</h2>
+              <div class="flow-row">
+                <span class="flow-icon"
+                  ><svg class="icon"><use href="#i-image" /></svg
+                ></span>
+                <div>
+                  <strong>捕捉灵感</strong>
+                  <p>把零散的截图放在一起</p>
+                </div>
+              </div>
+              <div class="flow-row">
+                <span class="flow-icon"
+                  ><svg class="icon"><use href="#i-spark" /></svg
+                ></span>
+                <div>
+                  <strong>整理成自己的语言</strong>
+                  <p>留下摘要、行动和新的启发</p>
+                </div>
+              </div>
+              <div class="flow-row">
+                <span class="flow-icon"
+                  ><svg class="icon"><use href="#i-folder" /></svg
+                ></span>
+                <div>
+                  <strong>归档到苹果备忘录</strong>
+                  <p>分好主题，随时重新发现</p>
+                </div>
+              </div>
+              <div class="hand-note">小想法，也值得一个好归宿。</div>
+            </div>
+            <button id="demo-button" class="demo-card">
+              <span class="demo-icon">✧</span
+              ><span
+                ><strong>还没有截图？</strong
+                ><small>看看一条灵感如何变成行动</small></span
+              ><span class="demo-cta">看看整理效果 <span>↗</span></span>
+            </button>
+            <div class="local-note">
+              <span class="tiny-dot"></span> 草稿保存在当前设备 · 支持离线回看
+            </div>
+          </aside>
+        </div>
+      </section>
+      <section id="result-view" class="view" hidden>
+        <div class="view-header">
+          <button id="back-to-capture" class="text-button">← 返回收集</button
+          ><span class="pill" id="result-status">整理结果</span>
+        </div>
+        <div class="result-heading">
+          <div class="eyebrow">A LITTLE CLEARER NOW</div>
+          <h1>让想法，往前一步。</h1>
+          <p>这是你的灵感。改成自己的表达，再好好留下来。</p>
+        </div>
+        <div class="result-layout">
+          <div class="card result-card">
+            <span id="demo-banner" class="demo-banner" hidden
+              >演示内容 · 未调用 AI</span
+            ><label for="note-title" class="small-label">主题</label
+            ><input
+              id="note-title"
+              class="title-input"
+              aria-label="笔记标题"
+              maxlength="160"
+            />
+            <div class="meta-row">
+              <label for="note-category">分类</label
+              ><select id="note-category"></select
+              ><span id="note-date" class="subtle"></span>
+            </div>
+            <div class="editor-block">
+              <label for="note-summary"
+                ><span class="block-dot"></span>一段值得留下的话</label
+              ><textarea
+                id="note-summary"
+                rows="5"
+                aria-label="摘要"
+                maxlength="12000"
+              ></textarea>
+            </div>
+            <div class="editor-block">
+              <label for="note-highlights">原文要点 <span>每行一个</span></label
+              ><textarea
+                id="note-highlights"
+                rows="3"
+                aria-label="原文要点"
+              ></textarea>
+            </div>
+            <div class="editor-block">
+              <label>下一步，可以这样做 <span>AI 建议</span></label>
+              <div id="todo-list" class="todo-list"></div>
+              <button id="add-todo" class="text-button">＋ 加一条行动</button>
+            </div>
+            <div class="editor-block insights-block">
+              <label for="note-insights"
+                >✧ 对我的启发 <span>AI 推论</span></label
+              ><textarea
+                id="note-insights"
+                rows="3"
+                aria-label="对我的启发"
+              ></textarea>
+            </div>
+            <div class="editor-block">
+              <label for="note-tags">主题标签 <span>用逗号分隔</span></label
+              ><input
+                id="note-tags"
+                aria-label="主题标签"
+                placeholder="学习, 用户研究"
+              />
+            </div>
+            <div id="uncertainty-block" class="uncertainty" hidden>
+              <strong>有些细节，值得再核实</strong>
+              <p id="uncertainty-text"></p>
+            </div>
+            <p class="result-footnote">
+              AI 可能误读截图。保存前，请核对事实与原文。
+            </p>
+          </div>
+          <aside class="result-actions">
+            <div class="card action-card">
+              <span class="small-label">GIVE IT A HOME</span>
+              <h2>放进你的备忘录</h2>
+              <p>
+                保存到「灵感收集」文件夹。<br />每条想法，都有清晰的主题和分类。
+              </p>
+              <button id="notes-button" class="button primary wide">
+                <svg class="icon"><use href="#i-book" /></svg
+                >存入苹果备忘录</button
+              ><button id="save-button" class="button secondary wide">
+                保存到灵感库
+              </button>
+              <div class="action-links">
+                <button id="copy-button" class="text-button">复制文字</button
+                ><button id="share-button" class="text-button">系统分享</button>
+              </div>
+              <a href="./guide.html#shortcut" class="guide-inline"
+                >首次使用？连接备忘录 →</a
+              >
+              <p class="small-print">
+                快捷指令完成前，请在备忘录中确认。截图保留在
+                App，转存内容为文字；待办使用 ☐ 符号。
+              </p>
+            </div>
+            <button id="new-button" class="button subtle-button wide">
+              ＋ 收集下一条灵感
+            </button>
+          </aside>
+        </div>
+      </section>
+      <section id="library-view" class="view" hidden>
+        <div class="eyebrow">YOUR GROWING COLLECTION</div>
+        <div class="library-heading">
+          <div>
+            <h1>每一次心动，都算数。</h1>
+            <p>给零散的灵感一个可以回来的地方。</p>
+          </div>
+          <span class="count-badge" id="library-count">0 条灵感</span>
+        </div>
+        <div class="library-toolbar">
+          <input
+            id="library-search"
+            type="search"
+            placeholder="找一个主题、关键词或想法"
+            aria-label="搜索灵感"
+          /><select id="library-category" aria-label="筛选分类">
+            <option value="">全部分类</option>
+          </select>
+        </div>
+        <div id="library-grid" class="library-grid"></div>
+        <div id="library-empty" class="empty-state">
+          <span>✧</span>
+          <h2>好想法，正在路上。</h2>
+          <p>整理并保存第一张截图，从这里开始积累。</p>
+          <button id="empty-capture" class="button primary">去收集灵感</button>
+        </div>
+        <div class="backup-row">
+          <p>保存在这台设备，定期备份更安心。</p>
+          <button id="export-button" class="text-button">导出备份</button
+          ><label for="import-input" class="text-button">导入备份</label
+          ><input
+            id="import-input"
+            type="file"
+            accept=".json,application/json"
+            class="visually-hidden"
+          />
+        </div>
+      </section>
+      <section id="settings-view" class="view" hidden>
+        <div class="eyebrow">MAKE IT YOURS</div>
+        <h1>给灵感铺好路。</h1>
+        <p class="settings-intro">只需连接一次，以后安心收集。</p>
+        <div class="settings-layout">
+          <form id="settings-form" class="card settings-card">
+            <h2>AI 服务连接</h2>
+            <p>API 密钥由你的服务器保管。这里填写应用地址和访问口令。</p>
+            <label for="service-url"
+              >应用服务器地址 <span>留空使用当前网站</span></label
+            ><input
+              id="service-url"
+              type="url"
+              placeholder="https://你的应用.vercel.app"
+              autocomplete="url"
+            /><label for="access-token">应用访问口令</label
+            ><input
+              id="access-token"
+              type="password"
+              placeholder="与服务器 APP_ACCESS_TOKEN 一致"
+              autocomplete="off"
+            /><label class="checkbox-label"
+              ><input
+                id="remember-token"
+                type="checkbox"
+              />在这台设备记住口令</label
+            >
+            <p class="small-print">
+              默认仅在本次打开期间保留。勾选后保存在当前设备；共享设备请勿勾选。
+            </p>
+            <hr />
+            <h2>苹果备忘录</h2>
+            <label for="shortcut-name">快捷指令名称</label
+            ><input id="shortcut-name" placeholder="拾念 · 存到备忘录" />
+            <p class="small-print">
+              名称须与 iPhone 快捷指令里的名称完全一致。文件夹在快捷指令内选择。
+            </p>
+            <div
+              id="settings-error"
+              role="alert"
+              class="error-message"
+              hidden
+            ></div>
+            <button class="button primary wide" type="submit">保存设置</button>
+          </form>
+          <aside class="aside-stack">
+            <div class="card settings-help">
+              <h2>像 App 一样使用</h2>
+              <p>
+                在 iPhone Safari
+                中打开部署后的网站，点分享，再选择「添加到主屏幕」。
+              </p>
+              <a href="./guide.html" class="text-link">查看安装与连接指南 →</a>
+            </div>
+            <div class="card settings-help">
+              <h2>关于你的数据</h2>
+              <p>
+                草稿和灵感库保存在当前设备。AI
+                整理时，截图和说明经过你的服务器发送给配置的模型服务。服务器代码不持久保存内容。
+              </p>
+              <p>
+                清除浏览器数据可能移除本地记录；重要内容请存入备忘录或导出备份。
+              </p>
+              <button id="forget-token" class="text-button">
+                清除已保存的口令
+              </button>
+            </div>
+            <p class="version-note">拾念 v0.1 · 为每一个小想法留一盏灯</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <nav class="bottom-nav" aria-label="主导航">
+      <button class="nav-item active" data-view="capture" aria-current="page">
+        <svg class="icon"><use href="#i-plus" /></svg><span>收集</span></button
+      ><button class="nav-item" data-view="library">
+        <svg class="icon"><use href="#i-book" /></svg
+        ><span>灵感库</span></button
+      ><button class="nav-item" data-view="settings">
+        <svg class="icon"><use href="#i-settings" /></svg><span>设置</span>
+      </button>
+    </nav>
+    <div id="toast" role="status" class="toast" hidden></div>
+    <div id="storage-warning" role="alert" class="storage-warning" hidden></div>
+    <dialog id="handoff-dialog">
+      <div class="dialog-content">
+        <span class="dialog-icon">↗</span>
+        <h2>文字已复制，准备归档</h2>
+        <p>
+          下一步会打开「快捷指令」，由它创建苹果备忘录。首次使用请先安装并选择保存文件夹。
+        </p>
+        <button id="open-shortcut" class="button primary wide">
+          打开快捷指令归档</button
+        ><a class="button secondary wide" href="./guide.html#shortcut"
+          >查看首次连接方法</a
+        ><button id="close-handoff" class="text-button wide">稍后再存</button>
+        <p class="small-print">是否成功创建，请以备忘录中的结果为准。</p>
+      </div>
+    </dialog>
+  </body>
+</html>
