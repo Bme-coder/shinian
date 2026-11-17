@@ -2,7 +2,7 @@
 
 把评论、文章里的截图变成自己的摘要、行动清单与启发，再保存到 **iPhone 苹果备忘录**。
 
-中文、移动优先、可添加到主屏幕的网页 App（PWA）。源码放 GitHub，网站部署后在 Safari 添加到主屏幕使用，无需苹果开发者会员。GitHub 不会把它变成可直接安装的原生 IPA。
+中文、移动优先、可添加到 iPhone 主屏幕的网页 App（PWA）。部署后在 Safari 添加到主屏幕使用，无需苹果开发者会员。GitHub 不会把它变成可直接安装的原生 IPA。
 
 ![拾念桌面预览](docs/preview-desktop.png)
 
@@ -19,54 +19,57 @@
 
 需要 Node.js 22 或更新版本。生产运行无第三方依赖。
 
-~~~sh
+```sh
 cp .env.example .env
 # 在本地编辑 .env，配置 API 和应用口令
 npm start
-~~~
+```
 
 浏览器打开 http://127.0.0.1:8787 。不配置 AI 时可以点「看看整理效果」。
 
-| 环境变量 | 用途 |
-| --- | --- |
-| AI_API_KEY | 模型服务密钥，仅服务器可见 |
-| AI_BASE_URL | 接口基础地址，如 https://api.openai.com/v1 |
-| AI_MODEL | 你账户可用、支持图片输入的模型名称，必须填写 |
-| AI_PROTOCOL | chat（默认）或 responses |
-| AI_JSON_MODE | 默认 true；兼容服务不接受 JSON 模式时设 false |
-| APP_ACCESS_TOKEN | 自设的随机应用口令，至少 16 位 |
-| ALLOWED_ORIGINS | 前后端分开部署时填写前端来源，多个用逗号分隔 |
+本机测试 AI 时，在「设置」选择「本机 API 密钥」并输入支持视觉的模型、API 地址和密钥。密钥仅保留在这个页面的运行内存中，刷新后需重新输入。
+
+| 环境变量         | 用途                                          |
+| ---------------- | --------------------------------------------- |
+| AI_API_KEY       | 模型服务密钥，仅服务器可见                    |
+| AI_BASE_URL      | 接口基础地址，如 https://api.openai.com/v1    |
+| AI_MODEL         | 你账户可用、支持图片输入的模型名称，必须填写  |
+| AI_PROTOCOL      | chat（默认）或 responses                      |
+| AI_JSON_MODE     | 默认 true；兼容服务不接受 JSON 模式时设 false |
+| APP_ACCESS_TOKEN | 自设的随机应用口令，至少 16 位                |
+| ALLOWED_ORIGINS  | 前后端分开部署时填写前端来源，多个用逗号分隔  |
 
 可用以下命令生成随机应用口令：
 
-~~~sh
+```sh
 openssl rand -hex 24
-~~~
+```
 
-在 App 设置中填写 **APP_ACCESS_TOKEN**，不要填写 AI_API_KEY。默认只在当前打开期间使用口令，可自愿选择记住。
+服务器代理模式在 App 设置中填写 **APP_ACCESS_TOKEN**，不要填写 AI_API_KEY。该口令默认只在当前打开期间使用，可选存入本机。
 
 ## GitHub 与手机安装
 
 把本目录作为独立仓库，例如 shinian；无需包含上级「与神对话」项目。
 
-1. 将源码推送到自己的 GitHub 仓库，排除 .env、缓存和个人数据。
-2. 在 Vercel 导入仓库，Framework Preset 选 Other，输出目录 public，无需构建命令。api/analyze.mjs 提供服务端接口。
-3. 在部署平台的环境变量中填好 API 配置和应用口令，再部署。费用和资源限制以你的账户页面为准。
-4. 在 iPhone Safari 打开部署获得的 **HTTPS 网站**，点分享 → 添加到主屏幕；有「作为网页 App 打开」选项时开启。
-5. App 设置填写应用访问口令。同站点部署无需填写应用服务器地址。
-6. 按应用内「使用指南」连接备忘录快捷指令。
+1. 使用 GitHub Pages 发布静态网页。本应用已包含 Pages 工作流，可在 GitHub Actions 中手动运行。
+2. 确认工作流发布出的 HTTPS 页面可打开。
+3. 在 iPhone Safari 打开网址，点分享 → 添加到主屏幕；若出现「作为网页 App 打开」选项，打开后添加。
+4. 在「设置」填写 AI 基础地址、支持图片的模型名称和 API 密钥，再开始收集。
+5. 按应用内「使用指南」连接备忘录快捷指令。
+
+仓库为公开仓库，代码和网页资料会对公众可见。AI 密钥不会写入仓库；整理时会在浏览器内附在请求中并直接发送给配置的 AI 服务。请只在自己的设备使用，不要共享设备。
+
+本机密钥模式依赖 AI 服务允许浏览器跨域请求。OpenAI API 可从网页调用；兼容服务若不支持 CORS，应使用私有服务器代理模式。
 
 其他 Node 托管平台：执行以下命令，让平台通过 HTTPS 转发端口 8787：
 
-~~~sh
+```sh
 HOST=0.0.0.0 npm start
-~~~
+```
 
-### GitHub Pages 可选方案
+### 私有服务器代理（可选）
 
-GitHub Pages 只托管前端。先部署上述后端，再将 GitHub Settings → Pages → Source 设为 GitHub Actions，手动运行 Publish static app to GitHub Pages 工作流。
-
-App 设置中填后端 HTTPS 域名；后端 ALLOWED_ORIGINS 填前端来源，例如 https://你的用户名.github.io 。资源使用相对路径，支持仓库子路径。不要把 API 密钥写入前端或 GitHub Pages。
+需要把 API 密钥留在服务端时，可将仓库导入 Vercel 或其他 Node 托管平台，配置 .env.example 中的服务端变量，然后在 App 设置选择「服务器代理」。费用和资源限制以托管平台为准。
 
 ## 苹果备忘录连接
 
@@ -83,23 +86,24 @@ App 中点「存入苹果备忘录」，复制后点「打开快捷指令归档�
 
 ## 数据与使用边界
 
-- 只有点击整理才上传压缩截图和说明。服务端代码不持久保存内容、不记录正文或密钥；托管平台与供应商的数据政策仍适用。
+- 点击整理时截图和说明会发送给模型服务。本机模式的密钥与图片直接发送给服务商；服务器模式的服务端代码不持久保存内容。浏览器、托管平台与供应商的数据政策仍适用。
+- GitHub 仓库和 GitHub Pages 网页内容公开。不要放入不希望公开的信息或敏感截图。
 - IndexedDB 保存本地笔记和截图，localStorage 保存文字恢复日志。未加密，共享设备不宜存敏感内容。
 - 清除网站数据、更换设备，或切换 Safari 与主屏幕 App，可能无法看到原记录。定期导出备份，将重要内容存入 Notes。
 - 每次最多 6 张原图、每张 20 MB、处理后 16 片，请求总大小 3 MB；过长或复杂截图请分批。备份导入最多 50 MB。
-- 服务端等 AI 最长 90 秒，前端约 100 秒。取消后供应商可能仍计费；程序不自动重试。
+- AI 等待上限约 100 秒。取消后供应商可能仍计费；程序不自动重试。
 - 每口令每进程每分钟最多 6 次。serverless 多实例不共享计数；多人开放前需加入账号、持久限流与费用预算。
 - 未配置真实 API 时，测试用模拟响应验证程序，不代表真实服务已连通。
 - 快捷指令导入、权限与实际 Notes 创建仍需 iPhone 实机验收。
 
 ## 验证
 
-~~~sh
+```sh
 npm ci
 npm test
 npm run check
 npx playwright install chromium webkit
 npm run test:e2e
-~~~
+```
 
 覆盖输入、长图、响应、访问控制、错误脱敏、静态文件边界，以及手机界面、草稿恢复、保存读取和离线缓存。真实模型 API 和 iPhone Notes 需要另行确认。

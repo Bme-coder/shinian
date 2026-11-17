@@ -7,6 +7,7 @@ const FILES = [
   "./lib/domain.js",
   "./lib/storage.js",
   "./lib/images.js",
+  "./lib/provider.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./icons/icon-192.png",

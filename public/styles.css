@@ -983,6 +983,37 @@ main {
 .settings-card h2 {
   font-size: 17px;
 }
+.connection-modes {
+  display: flex;
+  gap: 6px;
+  margin: 18px 0;
+  padding: 4px;
+  background: #eef0e7;
+  border-radius: 9px;
+}
+.connection-mode {
+  flex: 1;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #7e8d75;
+  font-size: 12px;
+}
+.connection-mode.selected {
+  background: #fffefa;
+  border-color: var(--line);
+  color: var(--deep);
+}
+.device-security {
+  margin: 8px 0 20px;
+  padding: 13px;
+  border-radius: 9px;
+  background: #f1efdf;
+  color: #897b50;
+  font-size: 11px;
+  line-height: 1.8;
+}
 .settings-card > p {
   font-size: 12px;
   color: #8d9980;

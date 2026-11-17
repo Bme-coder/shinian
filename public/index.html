@@ -375,33 +375,103 @@
       <section id="settings-view" class="view" hidden>
         <div class="eyebrow">MAKE IT YOURS</div>
         <h1>给灵感铺好路。</h1>
-        <p class="settings-intro">只需连接一次，以后安心收集。</p>
+        <p class="settings-intro">选择适合自己的 AI 连接方式。</p>
         <div class="settings-layout">
           <form id="settings-form" class="card settings-card">
             <h2>AI 服务连接</h2>
-            <p>API 密钥由你的服务器保管。这里填写应用地址和访问口令。</p>
-            <label for="service-url"
-              >应用服务器地址 <span>留空使用当前网站</span></label
-            ><input
-              id="service-url"
-              type="url"
-              placeholder="https://你的应用.vercel.app"
-              autocomplete="url"
-            /><label for="access-token">应用访问口令</label
-            ><input
-              id="access-token"
-              type="password"
-              placeholder="与服务器 APP_ACCESS_TOKEN 一致"
-              autocomplete="off"
-            /><label class="checkbox-label"
+            <p>选择连接方式。API 密钥不会写入 GitHub 源码。</p>
+            <div class="connection-modes" role="group" aria-label="AI 连接方式">
+              <button
+                class="connection-mode"
+                type="button"
+                data-mode="device"
+                aria-pressed="true"
+              >
+                本机 API 密钥
+              </button>
+              <button
+                class="connection-mode"
+                type="button"
+                data-mode="server"
+                aria-pressed="false"
+              >
+                服务器代理
+              </button>
+            </div>
+            <div id="device-api-fields">
+              <p class="notice device-security">
+                网页源码公开，密钥只在这次打开页面的内存中使用，刷新后要重新输入。整理时，截图与密钥会直接发送给你填写的
+                AI 服务。请勿在共享设备使用。
+              </p>
+              <label for="api-base-url">API 基础地址</label>
+              <input
+                id="api-base-url"
+                type="url"
+                value="https://api.openai.com/v1"
+                placeholder="https://api.openai.com/v1"
+                autocomplete="url"
+              />
+              <label for="model-name">模型名称</label>
+              <input
+                id="model-name"
+                type="text"
+                maxlength="200"
+                placeholder="填写支持图片输入的模型名称"
+                autocomplete="off"
+              />
+              <label for="model-api-key"
+                >模型 API 密钥 <span>不保存；每次打开后输入</span></label
+              >
+              <input
+                id="model-api-key"
+                type="password"
+                maxlength="3000"
+                placeholder="直接粘贴 AI 服务商的密钥"
+                autocomplete="off"
+                autocapitalize="none"
+                spellcheck="false"
+              />
+              <label for="api-protocol">接口协议</label>
+              <select id="api-protocol">
+                <option value="chat">Chat Completions（兼容接口）</option>
+                <option value="responses">Responses</option>
+              </select>
+              <label class="checkbox-label"
+                ><input id="json-mode" type="checkbox" checked />请求 JSON
+                格式结果</label
+              >
+              <p class="small-print">
+                服务商必须支持浏览器跨域请求。OpenAI
+                可直接使用；其他兼容服务若出现跨域错误，请联系服务商或改用服务器代理。
+              </p>
+            </div>
+            <div id="server-api-fields" hidden>
+              <p class="small-print">
+                服务器模式适合私有部署。AI_API_KEY 只配置在服务器环境变量中。
+              </p>
+              <label for="service-url"
+                >应用服务器地址 <span>留空使用当前网站</span></label
               ><input
-                id="remember-token"
-                type="checkbox"
-              />在这台设备记住口令</label
-            >
-            <p class="small-print">
-              默认仅在本次打开期间保留。勾选后保存在当前设备；共享设备请勿勾选。
-            </p>
+                id="service-url"
+                type="url"
+                placeholder="https://你的应用.vercel.app"
+                autocomplete="url"
+              /><label for="access-token">应用访问口令</label
+              ><input
+                id="access-token"
+                type="password"
+                placeholder="与服务器 APP_ACCESS_TOKEN 一致"
+                autocomplete="off"
+              /><label class="checkbox-label"
+                ><input
+                  id="remember-token"
+                  type="checkbox"
+                />在这台设备记住口令</label
+              >
+              <p class="small-print">
+                默认仅在本次打开期间保留。勾选后保存在当前设备；共享设备请勿勾选。
+              </p>
+            </div>
             <hr />
             <h2>苹果备忘录</h2>
             <label for="shortcut-name">快捷指令名称</label
@@ -421,22 +491,21 @@
             <div class="card settings-help">
               <h2>像 App 一样使用</h2>
               <p>
-                在 iPhone Safari
-                中打开部署后的网站，点分享，再选择「添加到主屏幕」。
+                在 iPhone Safari 中打开网站，点分享，再选择「添加到主屏幕」。
               </p>
               <a href="./guide.html" class="text-link">查看安装与连接指南 →</a>
             </div>
             <div class="card settings-help">
               <h2>关于你的数据</h2>
               <p>
-                草稿和灵感库保存在当前设备。AI
-                整理时，截图和说明经过你的服务器发送给配置的模型服务。服务器代码不持久保存内容。
+                草稿和灵感库保存在当前设备。本机模式下，截图和密钥从浏览器直接发送给所选的模型服务，不经过本应用服务器。
               </p>
               <p>
-                清除浏览器数据可能移除本地记录；重要内容请存入备忘录或导出备份。
+                API
+                密钥不写入设备存储，刷新后需重新输入。清除浏览器数据可能移除本地记录。
               </p>
               <button id="forget-token" class="text-button">
-                清除已保存的口令
+                清除本次 API 密钥
               </button>
             </div>
             <p class="version-note">拾念 v0.1 · 为每一个小想法留一盏灯</p>

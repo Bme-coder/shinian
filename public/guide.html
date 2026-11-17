@@ -39,6 +39,27 @@
       </article>
       <article class="card">
         <h2>02 · 连接你的 AI 服务</h2>
+        <p>GitHub Pages 版请选择 App「设置」→「本机 API 密钥」。</p>
+        <ol>
+          <li>
+            API 基础地址填写 https://api.openai.com/v1，或兼容服务商提供的 HTTPS
+            地址。
+          </li>
+          <li>填写你账户可用且支持图片输入的模型名称。</li>
+          <li>
+            输入模型 API
+            密钥并保存。密钥仅在当前页面内存中使用；刷新后需重新输入。
+          </li>
+        </ol>
+        <p class="notice">
+          这是公开的 GitHub Pages 网站。点「开始整理」时，截图、补充说明和 API
+          密钥会从浏览器直接发送到你填写的 AI
+          服务商。请只在自己的设备使用，不要共享设备；服务商可能保留其收到的内容。
+        </p>
+        <p>
+          本机直连要求服务商支持浏览器跨域请求。兼容接口若不允许跨域，可切换到服务器代理模式。
+        </p>
+        <h2>服务器代理（可选）</h2>
         <p>在部署平台的环境变量中配置以下信息，然后重新部署：</p>
         <pre>
 AI_API_KEY = 你的模型服务密钥
@@ -52,13 +73,13 @@ APP_ACCESS_TOKEN = 自设的至少16位随机口令</pre>
           AI_JSON_MODE=false。
         </p>
         <p>
-          随后打开拾念「设置」，填写同一个<strong>应用访问口令</strong>。前端和后端在同一网站时无需填服务器地址；如果前端在
+          随后打开拾念「设置」→「服务器代理」，填写同一个<strong>应用访问口令</strong>。前端和后端在同一网站时无需填服务器地址；如果前端在
           GitHub Pages，填后端 HTTPS
           域名，并把前端完整来源（协议+域名）添加到服务器 ALLOWED_ORIGINS。
         </p>
         <p class="notice">
-          不要把 AI API 密钥放进网页设置、源码或 GitHub。APP_ACCESS_TOKEN
-          只是你自设的应用口令。
+          服务器模式的 AI API 密钥只配置在服务器环境变量中。APP_ACCESS_TOKEN
+          是应用访问口令，不是模型 API 密钥。
         </p>
       </article>
       <article class="card" id="shortcut">

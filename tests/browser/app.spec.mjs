@@ -33,19 +33,17 @@ test("real screenshot with missing token retains draft and explains configuratio
   page,
 }) => {
   await page.goto("/");
-  await page
-    .locator("#image-input")
-    .setInputFiles({
-      name: "screen.png",
-      mimeType: "image/png",
-      buffer: Buffer.from(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zsAAAAAASUVORK5CYII=",
-        "base64",
-      ),
-    });
+  await page.locator("#image-input").setInputFiles({
+    name: "screen.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zsAAAAAASUVORK5CYII=",
+      "base64",
+    ),
+  });
   await page.getByLabel("补充一点你的想法").fill("我想从中找到行动");
   await page.getByRole("button", { name: "开始整理", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("访问口令");
+  await expect(page.getByRole("alert")).toContainText("API 密钥");
   await page.reload();
   await expect(page.getByLabel("补充一点你的想法")).toHaveValue(
     "我想从中找到行动",
@@ -57,20 +55,19 @@ test.describe("AI gateway interaction", () => {
   test("analysis accepts a live-shaped response", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "设置", exact: true }).click();
+    await page.getByRole("button", { name: "服务器代理" }).click();
     await page.getByLabel("应用访问口令").fill("this-is-a-test-access-token");
     await page.getByRole("button", { name: "保存设置", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("设置已保存");
     await page.getByRole("button", { name: "收集", exact: true }).click();
-    await page
-      .locator("#image-input")
-      .setInputFiles({
-        name: "screen.png",
-        mimeType: "image/png",
-        buffer: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zsAAAAAASUVORK5CYII=",
-          "base64",
-        ),
-      });
+    await page.locator("#image-input").setInputFiles({
+      name: "screen.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zsAAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
     await page.route("**/api/analyze", (route) =>
       route.fulfill({
         status: 200,
@@ -124,20 +121,19 @@ test.describe("pending and lifecycle data safety", () => {
     page.once("dialog", (d) => d.accept());
     await page.getByRole("button", { name: "＋ 收集下一条灵感" }).click();
     await page.getByRole("button", { name: "设置", exact: true }).click();
+    await page.getByRole("button", { name: "服务器代理" }).click();
     await page.getByLabel("应用访问口令").fill("this-is-a-test-access-token");
     await page.getByRole("button", { name: "保存设置", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("设置已保存");
     await page.getByRole("button", { name: "收集", exact: true }).click();
-    await page
-      .locator("#image-input")
-      .setInputFiles({
-        name: "screen.png",
-        mimeType: "image/png",
-        buffer: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zsAAAAAASUVORK5CYII=",
-          "base64",
-        ),
-      });
+    await page.locator("#image-input").setInputFiles({
+      name: "screen.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zsAAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
     await page.getByLabel("补充一点你的想法").fill("当前截图的真实背景");
     let resolveResponse;
     const hold = new Promise((resolve) => (resolveResponse = resolve));
@@ -228,13 +224,11 @@ test("backup roundtrip keeps note edits and checked actions without overwriting 
   expect(backup.notes[0].todos[0].done).toBe(true);
   expect(JSON.stringify(backup)).not.toContain("access-token");
   page.once("dialog", (d) => d.accept());
-  await page
-    .locator("#import-input")
-    .setInputFiles({
-      name: "backup.json",
-      mimeType: "application/json",
-      buffer,
-    });
+  await page.locator("#import-input").setInputFiles({
+    name: "backup.json",
+    mimeType: "application/json",
+    buffer,
+  });
   await expect(page.locator("#library-count")).toHaveText("2 条灵感");
 });
 test("notes handoff offers confirmation and never claims remote save", async ({
@@ -255,4 +249,144 @@ test("notes handoff offers confirmation and never claims remote save", async ({
   await expect(page.getByLabel("笔记标题")).toHaveValue(
     "好的产品，往往始于一句抱怨",
   );
+});
+
+test.describe("GitHub Pages direct API mode", () => {
+  test.use({ serviceWorkers: "block" });
+
+  test("sends screenshots with an in-memory key directly to the chosen vision model", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "设置", exact: true }).click();
+    await page.getByRole("button", { name: "本机 API 密钥" }).click();
+    await page.getByLabel("API 基础地址").fill("https://api.openai.com/v1");
+    await page.getByLabel("模型名称").fill("vision-model");
+    await page
+      .getByLabel("模型 API 密钥")
+      .fill("sk-device-only-not-for-storage");
+    await page.getByRole("button", { name: "保存设置", exact: true }).click();
+    await expect(page.getByRole("status")).toContainText("仅在当前页面内存");
+    await page.getByRole("button", { name: "收集", exact: true }).click();
+    await page.locator("#image-input").setInputFiles({
+      name: "screen.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zsAAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
+    await page.getByLabel("补充一点你的想法").fill("检查截图里的主题");
+    let gatewayCalls = 0;
+    await page.route("**/api/analyze", (route) => {
+      gatewayCalls++;
+      return route.fulfill({ status: 500, body: "unexpected" });
+    });
+    await page.route(
+      "https://api.openai.com/v1/chat/completions",
+      async (route) => {
+        expect(route.request().headers().authorization).toBe(
+          "Bearer sk-device-only-not-for-storage",
+        );
+        const request = route.request().postDataJSON();
+        expect(request.model).toBe("vision-model");
+        expect(request.messages[1].content[1].image_url.url).toMatch(
+          /^data:image\/jpeg;base64,/,
+        );
+        expect(request.messages[1].content[0].text).toContain(
+          "检查截图里的主题",
+        );
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            choices: [
+              {
+                finish_reason: "stop",
+                message: {
+                  content: JSON.stringify({
+                    title: "本机模式结果",
+                    category: "学习与研究",
+                    summary: "服务端没有中转。",
+                    highlights: [],
+                    todos: [],
+                    insights: [],
+                    tags: [],
+                    uncertainty: "",
+                  }),
+                },
+              },
+            ],
+          }),
+        });
+      },
+    );
+    await page.getByRole("button", { name: "开始整理", exact: true }).click();
+    await expect(page.getByLabel("笔记标题")).toHaveValue("本机模式结果");
+    expect(gatewayCalls).toBe(0);
+    const saved = await page.evaluate(async () => {
+      const db = await new Promise((resolve, reject) => {
+        const r = indexedDB.open("shinian-private", 1);
+        r.onsuccess = () => resolve(r.result);
+        r.onerror = () => reject(r.error);
+      });
+      return await new Promise((resolve, reject) => {
+        const r = db.transaction("kv").objectStore("kv").getAll();
+        r.onsuccess = () => resolve(JSON.stringify(r.result));
+        r.onerror = () => reject(r.error);
+      });
+    });
+    expect(saved).not.toContain("sk-device-only-not-for-storage");
+    expect(
+      await page.evaluate(() => localStorage.getItem("shinian-draft-journal")),
+    ).not.toContain("sk-device-only-not-for-storage");
+    await page.reload();
+    await page.getByRole("button", { name: "设置", exact: true }).click();
+    await expect(page.getByLabel("模型 API 密钥")).toHaveValue("");
+    await expect(page.getByLabel("模型名称")).toHaveValue("vision-model");
+  });
+
+  test("GitHub Pages direct mode clearly reports provider CORS and authentication failures", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "设置", exact: true }).click();
+    await page.getByRole("button", { name: "本机 API 密钥" }).click();
+    await page.getByLabel("API 基础地址").fill("https://api.openai.com/v1");
+    await page.getByLabel("模型名称").fill("vision-model");
+    await page
+      .getByLabel("模型 API 密钥")
+      .fill("sk-another-device-only-secret");
+    await page.getByRole("button", { name: "保存设置", exact: true }).click();
+    await page.getByRole("button", { name: "收集", exact: true }).click();
+    await page.locator("#image-input").setInputFiles({
+      name: "screen.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zsAAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
+    await page.route("https://api.openai.com/v1/chat/completions", (route) =>
+      route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: { message: "sensitive raw provider error" },
+        }),
+      }),
+    );
+    await page.getByRole("button", { name: "开始整理", exact: true }).click();
+    await expect(page.getByRole("alert")).toContainText("API 密钥无效");
+    await expect(page.getByRole("alert")).not.toContainText(
+      "sensitive raw provider error",
+    );
+    await expect(page.locator(".image-thumb")).toHaveCount(1);
+    await page.reload();
+    await page.getByRole("button", { name: "收集", exact: true }).click();
+    await page.getByRole("button", { name: "开始整理", exact: true }).click();
+    await expect(page.getByRole("alert")).toContainText(
+      "刷新后需要重新输入 API 密钥",
+    );
+  });
 });

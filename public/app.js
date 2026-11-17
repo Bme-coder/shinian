@@ -2,16 +2,31 @@ import {
   CATEGORIES,
   MAX_BODY_BYTES,
   normalizeResult,
+  normalizeBaseUrl,
   formatNote,
   buildShortcutUrl,
 } from "./lib/domain.js";
 import { storage } from "./lib/storage.js";
 import { prepareImages } from "./lib/images.js";
+import {
+  buildProviderRequest,
+  parseProviderResponse,
+  safeProviderError,
+} from "./lib/provider.js";
 const $ = (id) => document.getElementById(id);
 const DEFAULT_SHORTCUT = "拾念 · 存到备忘录";
 let state = { images: [], context: "", focus: "balanced", note: null },
-  settings = { serverUrl: "", shortcutName: DEFAULT_SHORTCUT },
+  settings = {
+    mode: "device",
+    baseUrl: "https://api.openai.com/v1",
+    model: "",
+    protocol: "chat",
+    jsonMode: true,
+    serverUrl: "",
+    shortcutName: DEFAULT_SHORTCUT,
+  },
   token = "",
+  providerKey = "",
   view = "capture",
   busy = false,
   importing = false,
@@ -115,6 +130,16 @@ function showView(next) {
 }
 function updateOffline() {
   $("offline-banner").hidden = navigator.onLine;
+}
+function renderConnectionMode() {
+  const device = settings.mode !== "server";
+  $("device-api-fields").hidden = !device;
+  $("server-api-fields").hidden = device;
+  document.querySelectorAll(".connection-mode").forEach((button) => {
+    const active = button.dataset.mode === (device ? "device" : "server");
+    button.setAttribute("aria-pressed", String(active));
+    button.classList.toggle("selected", active);
+  });
 }
 function syncContext() {
   state.context = $("context").value;
@@ -272,7 +297,14 @@ async function analyze() {
     fail("capture-error", "先选择至少一张截图，再开始整理。");
     return;
   }
-  if (!token) {
+  if (settings.mode === "device" && !providerKey) {
+    fail(
+      "capture-error",
+      "刷新后需要重新输入 API 密钥。请到「设置」填入你的模型服务密钥。",
+    );
+    return;
+  }
+  if (settings.mode === "server" && !token) {
     fail(
       "capture-error",
       "请先到「设置」填写应用访问口令，并在服务器配置 AI 服务。",
@@ -305,16 +337,36 @@ async function analyze() {
   const timer = setTimeout(() => controller.abort("timeout"), 100000);
   setBusy(true);
   try {
-    const endpoint = settings.serverUrl
-      ? settings.serverUrl.replace(/\/$/, "") + "/api/analyze"
-      : new URL("api/analyze", location.href).href;
+    const requestConfig =
+      settings.mode === "device"
+        ? buildProviderRequest(
+            {
+              images: state.images.flatMap((x) => x.slices),
+              context: state.context,
+              focus: state.focus,
+            },
+            {
+              baseUrl: settings.baseUrl,
+              model: settings.model,
+              protocol: settings.protocol,
+              jsonMode: settings.jsonMode,
+            },
+          )
+        : null;
+    const endpoint =
+      settings.mode === "device"
+        ? requestConfig.url
+        : settings.serverUrl
+          ? settings.serverUrl.replace(/\/$/, "") + "/api/analyze"
+          : new URL("api/analyze", location.href).href;
+    const headers = { "Content-Type": "application/json" };
+    headers.Authorization =
+      "Bearer " + (settings.mode === "device" ? providerKey : token);
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body,
+      headers,
+      body:
+        settings.mode === "device" ? JSON.stringify(requestConfig.body) : body,
       signal: controller.signal,
       credentials: "omit",
       redirect: "error",
@@ -324,11 +376,21 @@ async function analyze() {
     try {
       data = await response.json();
     } catch {
-      throw new Error("应用服务器没有返回可用内容，请检查设置中的服务器地址。");
+      throw new Error(
+        "AI 服务没有返回可用内容。请检查 API 地址、模型设置和网络。",
+      );
     }
     if (!response.ok)
-      throw new Error(data.error || "整理失败，草稿已保留，请稍后重试。");
-    const result = normalizeResult(data.result);
+      throw new Error(
+        settings.mode === "device"
+          ? safeProviderError(response.status)
+          : data.error || "整理失败，草稿已保留，请稍后重试。",
+      );
+    const result = normalizeResult(
+      settings.mode === "device"
+        ? parseProviderResponse(data, settings.protocol)
+        : data.result,
+    );
     state.note = {
       ...result,
       todos: result.todos.map((text) => ({ text, done: false })),
@@ -348,7 +410,9 @@ async function analyze() {
           ? "整理超时，草稿已保留。"
           : "已取消整理，草稿已保留。"
         : e instanceof TypeError
-          ? "暂时无法连接应用服务器。请检查网络、服务器地址与跨域配置；草稿已保留。"
+          ? settings.mode === "device"
+            ? "无法连接模型 API。请确认服务商允许 iPhone 浏览器跨域请求、API 地址正确且网络可用。草稿已保留。"
+            : "暂时无法连接应用服务器。请检查网络、服务器地址与跨域配置；草稿已保留。"
           : e.message,
     );
   } finally {
@@ -487,45 +551,80 @@ function renderLibrary() {
   }
 }
 function renderSettings() {
+  $("api-base-url").value = settings.baseUrl || "https://api.openai.com/v1";
+  $("model-name").value = settings.model || "";
+  $("api-protocol").value = settings.protocol || "chat";
+  $("json-mode").checked = settings.jsonMode !== false;
+  $("model-api-key").value = "";
   $("service-url").value = settings.serverUrl;
   $("shortcut-name").value = settings.shortcutName;
-  $("access-token").value = token;
+  $("access-token").value = "";
   $("remember-token").checked = Boolean(settings.rememberToken);
+  renderConnectionMode();
 }
 async function saveSettings(event) {
   event.preventDefault();
   fail("settings-error", "");
   try {
-    const raw = $("service-url").value.trim();
-    let url = "";
-    if (raw) {
-      const u = new URL(raw);
-      if (
-        u.protocol !== "https:" ||
-        u.username ||
-        u.password ||
-        u.search ||
-        u.hash ||
-        (u.pathname !== "/" && u.pathname !== "")
-      )
-        throw new Error(
-          "应用服务器地址请填写 HTTPS 网站域名，不要附加 /api/analyze、路径或密钥。",
-        );
-      url = u.origin;
-    }
-    const nextToken = $("access-token").value.trim();
-    if (nextToken && nextToken.length < 16)
-      throw new Error("应用访问口令至少 16 位，请与服务器配置保持一致。");
-    settings = {
-      serverUrl: url,
+    const mode =
+      document.querySelector(".connection-mode.selected")?.dataset.mode ||
+      settings.mode ||
+      "device";
+    const next = {
+      ...settings,
+      mode,
       shortcutName: $("shortcut-name").value.trim() || DEFAULT_SHORTCUT,
-      rememberToken: $("remember-token").checked,
     };
+    if (mode === "device") {
+      next.baseUrl = normalizeBaseUrl($("api-base-url").value.trim());
+      next.model = $("model-name").value.trim();
+      const key = $("model-api-key").value.trim();
+      if (!next.model || next.model.length > 200)
+        throw new Error("请填写服务商账户中支持图片的模型名称。");
+      if (!key || key.length > 3000)
+        throw new Error("请输入 API 密钥；它只在当前页面内存中使用。");
+      providerKey = key;
+      $("model-api-key").value = "";
+      next.protocol = $("api-protocol").value;
+      next.jsonMode = $("json-mode").checked;
+      token = "";
+      await storage.remove("access-token");
+    } else {
+      const raw = $("service-url").value.trim();
+      let url = "";
+      if (raw) {
+        const u = new URL(raw);
+        if (
+          u.protocol !== "https:" ||
+          u.username ||
+          u.password ||
+          u.search ||
+          u.hash ||
+          (u.pathname !== "/" && u.pathname !== "")
+        )
+          throw new Error(
+            "应用服务器地址请填写 HTTPS 网站域名，不要附加 /api/analyze、路径或密钥。",
+          );
+        url = u.origin;
+      }
+      const nextToken = $("access-token").value.trim();
+      if (nextToken && nextToken.length < 16)
+        throw new Error("应用访问口令至少 16 位，请与服务器配置保持一致。");
+      next.serverUrl = url;
+      next.rememberToken = $("remember-token").checked;
+      token = nextToken;
+      providerKey = "";
+      if (next.rememberToken) await storage.set("access-token", nextToken);
+      else await storage.remove("access-token");
+    }
+    settings = next;
     await storage.set("settings", settings);
-    if (settings.rememberToken) await storage.set("access-token", nextToken);
-    else await storage.remove("access-token");
-    token = nextToken;
-    toast("设置已保存，可以开始收集了");
+    renderSettings();
+    toast(
+      mode === "device"
+        ? "设置已保存；API 密钥仅在当前页面内存中有效。"
+        : "设置已保存，可以开始收集了",
+    );
   } catch (e) {
     fail("settings-error", e.message);
   }
@@ -771,8 +870,21 @@ $("open-shortcut").onclick = () => {
 };
 $("close-handoff").onclick = () => $("handoff-dialog").close();
 $("settings-form").onsubmit = saveSettings;
+document.querySelectorAll(".connection-mode").forEach((button) => {
+  button.onclick = () => {
+    settings.mode = button.dataset.mode;
+    renderConnectionMode();
+  };
+});
+document.querySelectorAll(".connection-mode").forEach((button) => {
+  button.onclick = () => {
+    settings.mode = button.dataset.mode;
+    renderConnectionMode();
+  };
+});
 $("forget-token").onclick = async () => {
   token = "";
+  providerKey = "";
   settings.rememberToken = false;
   try {
     await storage.remove("access-token");
@@ -805,6 +917,7 @@ async function init() {
       storage.get("draft"),
     ]);
     if (savedSettings) settings = { ...settings, ...savedSettings };
+    settings.mode = settings.mode || "device";
     token = savedToken || "";
     let recovered = draft;
     try {
