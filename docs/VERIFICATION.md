@@ -1,11 +1,11 @@
 # 验证记录 · 2026-11-17
 
 - Node 单元与 HTTP：18 项通过。
-- Chromium + WebKit：20 项通过，含本机密钥直连、密钥不落盘、错误脱敏、草稿恢复、导航隔离、备份往返和快捷指令交接。
+- Chromium + WebKit：22 项通过，含本机密钥直连、密钥不落盘、错误脱敏、窄屏设置布局、草稿恢复、导航隔离、备份往返和快捷指令交接。
 - JavaScript 语法检查通过；移动与桌面截图已人工查看。
 - macOS shortcuts sign --mode anyone 成功，生成签名文件；尚未在真实 iPhone 导入和执行。
 - 模拟 OpenAI 兼容 API 验证请求与响应；未提供真实 AI 密钥，因此真实模型质量与账户连通性未验证。
-- 代码已在 GitHub Actions CI 验证。GitHub Pages 部署等待公开仓库并启用 Pages。
+- GitHub Actions CI 与 Pages 发布均成功；发布站点 HTTPS 及 390 像素移动冒烟检查通过。
 
 已修复：快速刷新时最后文字漏存；初始化完成前生命周期事件覆盖草稿；AI 运行期间切换笔记造成来源混淆。
 

@@ -254,6 +254,20 @@ test("notes handoff offers confirmation and never claims remote save", async ({
 test.describe("GitHub Pages direct API mode", () => {
   test.use({ serviceWorkers: "block" });
 
+  test("API settings fields stack clearly on a phone screen", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "设置", exact: true }).click();
+    const label = page.locator('label[for="api-base-url"]');
+    const input = page.locator("#api-base-url");
+    await expect(label).toHaveCSS("display", "block");
+    const labelBox = await label.boundingBox();
+    const inputBox = await input.boundingBox();
+    expect(labelBox.y + labelBox.height).toBeLessThan(inputBox.y);
+    expect(inputBox.width).toBeGreaterThan(300);
+  });
+
   test("sends screenshots with an in-memory key directly to the chosen vision model", async ({
     page,
   }) => {

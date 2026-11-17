@@ -1028,6 +1028,19 @@ main {
   width: 100%;
   font-size: 13px;
 }
+.settings-card #device-api-fields > label:not(.checkbox-label) {
+  display: block;
+  font-size: 12px;
+  margin: 20px 0 9px;
+}
+.settings-card #device-api-fields > input,
+.settings-card #device-api-fields > select {
+  width: 100%;
+  font-size: 13px;
+}
+.settings-card #device-api-fields > .checkbox-label {
+  margin: 18px 0 0;
+}
 .checkbox-label {
   display: flex;
   gap: 9px;
@@ -1447,6 +1460,10 @@ dialog::backdrop {
     padding: 21px;
   }
   .settings-card > input {
+    font-size: 16px;
+  }
+  .settings-card #device-api-fields > input,
+  .settings-card #device-api-fields > select {
     font-size: 16px;
   }
   .settings-card > input::placeholder {

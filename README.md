@@ -51,7 +51,7 @@ openssl rand -hex 24
 
 把本目录作为独立仓库，例如 shinian；无需包含上级「与神对话」项目。
 
-1. 使用 GitHub Pages 发布静态网页。本应用已包含 Pages 工作流，可在 GitHub Actions 中手动运行。
+1. GitHub Pages 已配置。后续推送 main 会自动发布，也可在 GitHub Actions 中手动运行 Pages 工作流。
 2. 确认工作流发布出的 HTTPS 页面可打开。
 3. 在 iPhone Safari 打开网址，点分享 → 添加到主屏幕；若出现「作为网页 App 打开」选项，打开后添加。
 4. 在「设置」填写 AI 基础地址、支持图片的模型名称和 API 密钥，再开始收集。
